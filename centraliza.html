@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGRAF — Protótipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --purple-900:#2E1547;
+    --purple-700:#5B2A86;
+    --purple-600:#7141A8;
+    --purple-100:#F3EEFA;
+    --purple-50:#FAF7FE;
+    --ink:#221C2B;
+    --ink-soft:#5B5566;
+    --line:#E4DEEE;
+    --paper:#FFFFFF;
+    --bg:#F6F3FA;
+    --amber:#B8790A;
+    --amber-bg:#FCF1DC;
+    --green:#1E7A46;
+    --green-bg:#E4F5EA;
+    --red:#B7302B;
+    --red-bg:#FBE9E8;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'IBM Plex Sans',sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  /* ---------- LOGIN ---------- */
+  #login-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(91,42,134,0.12), transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(91,42,134,0.10), transparent 45%),
+      var(--bg);
+    padding:24px;
+  }
+  .login-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:44px 40px;
+    width:100%;
+    max-width:400px;
+    box-shadow:0 20px 50px -20px rgba(46,21,71,0.25);
+  }
+  .brandmark{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:28px;
+  }
+  .brandmark .stamp{
+    width:44px;height:44px;border-radius:10px;
+    background:var(--purple-700);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:700;font-size:15px;letter-spacing:0.5px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .brandmark h1{font-size:20px;margin:0;letter-spacing:0.3px;}
+  .brandmark p{margin:2px 0 0;font-size:12.5px;color:var(--ink-soft);}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;}
+  .field input, select{
+    width:100%;padding:11px 13px;border-radius:8px;border:1.5px solid var(--line);
+    font-family:inherit;font-size:14.5px;background:var(--purple-50);color:var(--ink);
+  }
+  .field input:focus, select:focus{outline:2px solid var(--purple-600);outline-offset:1px;border-color:var(--purple-600);}
+  .role-select{display:flex;gap:8px;flex-wrap:wrap;}
+  .role-chip{
+    flex:1;min-width:100px;padding:10px 8px;border-radius:8px;border:1.5px solid var(--line);
+    text-align:center;font-size:12.5px;font-weight:600;cursor:pointer;background:var(--purple-50);color:var(--ink-soft);
+    transition:all .15s;
+  }
+  .role-chip.active{background:var(--purple-700);border-color:var(--purple-700);color:#fff;}
+  .btn-primary{
+    width:100%;padding:12px;border:none;border-radius:8px;background:var(--purple-700);
+    color:#fff;font-weight:600;font-size:14.5px;cursor:pointer;margin-top:8px;
+    transition:background .15s;
+  }
+  .btn-primary:hover{background:var(--purple-900);}
+  .login-foot{margin-top:18px;font-size:12px;color:var(--ink-soft);text-align:center;}
+
+  /* ---------- APP SHELL ---------- */
+  #app{display:none;min-height:100vh;}
+  .shell{display:flex;min-height:100vh;}
+  .sidebar{
+    width:230px;flex-shrink:0;background:var(--purple-900);color:#EFE6FA;
+    padding:22px 16px;display:flex;flex-direction:column;
+  }
+  .sidebar .brandmark{margin-bottom:30px;padding:0 4px;}
+  .sidebar .brandmark h1{color:#fff;font-size:17px;}
+  .sidebar .brandmark p{color:#C7B4DE;}
+  .sidebar .stamp{background:#EFE6FA;color:var(--purple-900);}
+  nav.navlist{display:flex;flex-direction:column;gap:3px;}
+  .navlink{
+    display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;
+    color:#D8C9EC;text-decoration:none;font-size:14px;font-weight:500;cursor:pointer;
+    border:none;background:none;text-align:left;width:100%;font-family:inherit;
+  }
+  .navlink svg{width:17px;height:17px;flex-shrink:0;opacity:0.85;}
+  .navlink:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .navlink.active{background:var(--purple-700);color:#fff;}
+  .sidebar-foot{margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,0.12);}
+  .role-badge{
+    font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;
+    color:#C7B4DE;margin-bottom:6px;
+  }
+  .user-row{display:flex;align-items:center;justify-content:space-between;}
+  .user-row span{font-size:13px;color:#fff;font-weight:500;}
+  .logout-btn{background:none;border:none;color:#C7B4DE;font-size:12px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:0;}
+
+  .main{flex:1;padding:28px 34px;max-width:1180px;}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
+  .topbar h2{font-size:22px;margin:0 0 4px;}
+  .topbar .sub{color:var(--ink-soft);font-size:14px;margin:0;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* stat cards */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px;}
+  .stat-card{
+    background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 18px;
+  }
+  .stat-card .num{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;color:var(--purple-900);}
+  .stat-card .label{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+
+  .panel{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-bottom:20px;}
+  .panel h3{margin:0 0 4px;font-size:15.5px;}
+  .panel .panel-sub{font-size:13px;color:var(--ink-soft);margin:0 0 16px;}
+
+  /* protocol badge - signature element */
+  .protocolo{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;
+    color:var(--purple-700);background:var(--purple-100);
+    border:1px dashed var(--purple-600);border-radius:6px;padding:3px 8px;
+    letter-spacing:0.3px;
+  }
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{
+    text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:0.4px;
+    color:var(--ink-soft);padding:8px 10px;border-bottom:2px solid var(--line);font-weight:600;
+  }
+  tbody td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tbody tr:hover{background:var(--purple-50);}
+  .status-pill{
+    display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;
+  }
+  .status-aprovado{background:var(--green-bg);color:var(--green);}
+  .status-pendente{background:var(--amber-bg);color:var(--amber);}
+  .status-recusado{background:var(--red-bg);color:var(--red);}
+
+  .filters-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .filters-row select, .filters-row input{max-width:180px;}
+
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .form-grid .full{grid-column:1/-1;}
+  textarea{
+    width:100%;padding:11px 13px;border-radius:8px;border:1.5px solid var(--line);
+    font-family:inherit;font-size:14px;background:var(--purple-50);color:var(--ink);resize:vertical;min-height:80px;
+  }
+  .btn-row{display:flex;gap:10px;margin-top:6px;}
+  .btn-secondary{
+    padding:11px 18px;border-radius:8px;border:1.5px solid var(--line);background:#fff;
+    color:var(--ink);font-weight:600;font-size:14px;cursor:pointer;
+  }
+  .btn-sm{padding:6px 12px;font-size:12.5px;border-radius:6px;}
+  .toast{
+    position:fixed;bottom:24px;right:24px;background:var(--purple-900);color:#fff;
+    padding:14px 20px;border-radius:10px;font-size:13.5px;box-shadow:0 10px 30px -10px rgba(0,0,0,0.4);
+    display:none;align-items:center;gap:10px;z-index:50;
+  }
+  .toast.show{display:flex;animation:toastin .25s ease;}
+  @keyframes toastin{from{transform:translateY(10px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+  .locked-note{
+    background:var(--amber-bg);border:1px solid #E8CE9A;color:#7A5205;border-radius:8px;
+    padding:10px 14px;font-size:13px;margin-bottom:16px;
+  }
+  .empty{padding:30px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .report-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0;}
+  .report-summary div{background:var(--purple-50);border-radius:10px;padding:14px;}
+  .report-summary .n{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--purple-900);}
+  .report-summary .l{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  @media (max-width:800px){
+    .shell{flex-direction:column;}
+    .sidebar{width:100%;}
+    .stats-row{grid-template-columns:repeat(2,1fr);}
+    .form-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="brandmark">
+      <div class="stamp">SG</div>
+      <div>
+        <h1>SIGRAF</h1>
+        <p>Registro e Gestão de Atividades Funcionais</p>
+      </div>
+    </div>
+    <div class="field">
+      <label>Usuário</label>
+      <input id="login-user" type="text" value="ana.souza" />
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" value="••••••••" />
+    </div>
+    <div class="field">
+      <label>Entrar como</label>
+      <div class="role-select">
+        <div class="role-chip active" data-role="colaborador">Colaborador</div>
+        <div class="role-chip" data-role="gestor">Gestor</div>
+        <div class="role-chip" data-role="administrador">Administrador</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Entrar</button>
+    <p class="login-foot">Protótipo demonstrativo — MVP SIGRAF · Projeto Integrador 2026/01</p>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brandmark">
+        <div class="stamp">SG</div>
+        <div>
+          <h1>SIGRAF</h1>
+          <p>v0.1 · MVP</p>
+        </div>
+      </div>
+      <nav class="navlist">
+        <button class="navlink active" data-view="dashboard" onclick="showView('dashboard')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          Painel
+        </button>
+        <button class="navlink" data-view="registrar" onclick="showView('registrar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Registrar Atividade
+        </button>
+        <button class="navlink" data-view="consultar" onclick="showView('consultar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          Consultar
+        </button>
+        <button class="navlink" data-view="relatorios" onclick="showView('relatorios')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15v-4M12 15V8M16 15v-6"/></svg>
+          Relatórios
+        </button>
+        <button class="navlink" data-view="usuarios" onclick="showView('usuarios')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="18" cy="8.5" r="2.4"/><path d="M15.7 14.3c2.6.4 4.8 2.5 4.8 5.7"/></svg>
+          Usuários e Perfis
+        </button>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="role-badge" id="sb-role">Colaborador</div>
+        <div class="user-row">
+          <span id="sb-user">ana.souza</span>
+          <button class="logout-btn" onclick="doLogout()">sair</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- DASHBOARD -->
+      <section class="view active" id="view-dashboard">
+        <div class="topbar">
+          <div>
+            <h2>Painel Geral</h2>
+            <p class="sub">Visão consolidada das atividades registradas — <span id="dash-scope">todos os setores</span></p>
+          </div>
+          <span class="protocolo">SETOR PILOTO · ATIVO</span>
+        </div>
+        <div class="stats-row" id="stats-row"></div>
+        <div class="panel">
+          <h3>Últimos registros</h3>
+          <p class="panel-sub">Atividades mais recentes lançadas no sistema</p>
+          <table>
+            <thead><tr><th>Protocolo</th><th>Colaborador</th><th>Tipo</th><th>Setor</th><th>Data</th><th>Status</th></tr></thead>
+            <tbody id="dash-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- REGISTRAR -->
+      <section class="view" id="view-registrar">
+        <div class="topbar">
+          <div>
+            <h2>Registrar Atividade</h2>
+            <p class="sub">Substituições, coberturas de horário e apoios extraordinários</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="form-grid">
+            <div class="field"><label>Colaborador</label><input id="f-colab" type="text" value="Ana Souza" /></div>
+            <div class="field"><label>Setor</label>
+              <select id="f-setor">
+                <option>Atendimento</option><option>Financeiro</option><option>Operações</option><option>Recursos Humanos</option><option>Manutenção</option>
+              </select>
+            </div>
+            <div class="field"><label>Tipo de atividade</label>
+              <select id="f-tipo">
+                <option>Substituição temporária</option><option>Cobertura de horário</option><option>Apoio operacional</option>
+              </select>
+            </div>
+            <div class="field"><label>Responsável / testemunha</label><input id="f-resp" type="text" placeholder="Nome do gestor ou colega" /></div>
+            <div class="field"><label>Data</label><input id="f-data" type="date" /></div>
+            <div class="field"><label>Horário (início–fim)</label><input id="f-hora" type="text" placeholder="ex.: 13h00–17h00" /></div>
+            <div class="field full"><label>Descrição da atividade</label><textarea id="f-desc" placeholder="Descreva o que foi realizado e o motivo..."></textarea></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn-primary" style="width:auto;" onclick="registrarAtividade()">Registrar atividade</button>
+            <button class="btn-secondary" onclick="limparForm()">Limpar</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONSULTAR -->
+      <section class="view" id="view-consultar">
+        <div class="topbar">
+          <div>
+            <h2>Consultar Atividades</h2>
+            <p class="sub">Histórico completo com filtros e rastreabilidade por protocolo</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="filters-row">
+            <select id="filt-setor" onchange="renderConsulta()">
+              <option value="">Todos os setores</option>
+              <option>Atendimento</option><option>Financeiro</option><option>Operações</option><option>Recursos Humanos</option><option>Manutenção</option>
+            </select>
+            <select id="filt-tipo" onchange="renderConsulta()">
+              <option value="">Todos os tipos</option>
+              <option>Substituição temporária</option><option>Cobertura de horário</option><option>Apoio operacional</option>
+            </select>
+            <select id="filt-status" onchange="renderConsulta()">
+              <option value="">Todos os status</option>
+              <option>Aprovado</option><option>Pendente</option><option>Recusado</option>
+            </select>
+            <input id="filt-busca" type="text" placeholder="Buscar colaborador..." oninput="renderConsulta()" />
+          </div>
+          <table>
+            <thead><tr><th>Protocolo</th><th>Colaborador</th><th>Tipo</th><th>Setor</th><th>Data</th><th>Status</th><th></th></tr></thead>
+            <tbody id="consulta-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- RELATORIOS -->
+      <section class="view" id="view-relatorios">
+        <div class="topbar">
+          <div>
+            <h2>Relatórios</h2>
+            <p class="sub">Consolidação para prestação de contas e apoio à decisão</p>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Gerar relatório por período</h3>
+          <p class="panel-sub">Selecione o intervalo para consolidar os registros</p>
+          <div class="filters-row">
+            <input type="date" id="rel-de" />
+            <input type="date" id="rel-ate" />
+            <button class="btn-primary" style="width:auto;" onclick="gerarRelatorio()">Gerar relatório</button>
+            <button class="btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
+          </div>
+          <div class="report-summary" id="report-summary"></div>
+          <table>
+            <thead><tr><th>Setor</th><th>Substituições</th><th>Coberturas</th><th>Apoios</th><th>Total</th></tr></thead>
+            <tbody id="report-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- USUARIOS -->
+      <section class="view" id="view-usuarios">
+        <div class="topbar">
+          <div>
+            <h2>Usuários e Perfis de Acesso</h2>
+            <p class="sub">Controle de quem registra, aprova e consulta cada informação</p>
+          </div>
+        </div>
+        <div id="usuarios-locked" class="locked-note" style="display:none;">
+          Esta área é visível apenas para o perfil <strong>Administrador</strong>. Troque de perfil na tela de login para visualizar.
+        </div>
+        <div class="panel" id="usuarios-panel">
+          <table>
+            <thead><tr><th>Nome</th><th>Usuário</th><th>Setor</th><th>Perfil</th><th>Status</th></tr></thead>
+            <tbody id="usuarios-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let currentRole = 'colaborador';
+let currentUser = 'ana.souza';
+
+document.querySelectorAll('.role-chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('.role-chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+  });
+});
+
+const SETORES = ["Atendimento","Financeiro","Operações","Recursos Humanos","Manutenção"];
+const TIPOS = ["Substituição temporária","Cobertura de horário","Apoio operacional"];
+const STATUSES = ["Aprovado","Pendente","Recusado"];
+const NOMES = ["Ana Souza","Carlos Lima","Beatriz Ramos","Diego Alves","Fernanda Costa","João Pedro","Larissa Melo","Rafael Nunes"];
+
+let seq = 1042;
+function nextProtocolo(){
+  seq++;
+  const y = new Date().getFullYear();
+  return `SIGRAF-${y}-${String(seq).padStart(5,'0')}`;
+}
+
+let atividades = [];
+(function seed(){
+  const base = new Date('2026-07-01');
+  for(let i=0;i<26;i++){
+    const d = new Date(base.getTime() + i*36*60*60*1000);
+    seq++;
+    atividades.push({
+      protocolo:`SIGRAF-2026-${String(seq).padStart(5,'0')}`,
+      colaborador: NOMES[i % NOMES.length],
+      setor: SETORES[i % SETORES.length],
+      tipo: TIPOS[i % TIPOS.length],
+      status: STATUSES[i % 3 === 0 ? 0 : (i % 5 === 0 ? 2 : 1)],
+      data: d.toISOString().slice(0,10),
+      hora: "13h00–17h00",
+      resp: "Marcos Teixeira",
+      desc: "Cobertura registrada durante o expediente regular."
+    });
+  }
+  atividades.sort((a,b)=> b.data.localeCompare(a.data));
+})();
+
+function statusPillClass(s){
+  if(s==='Aprovado') return 'status-aprovado';
+  if(s==='Pendente') return 'status-pendente';
+  return 'status-recusado';
+}
+
+function doLogin(){
+  const role = document.querySelector('.role-chip.active').dataset.role;
+  currentRole = role;
+  currentUser = document.getElementById('login-user').value || 'ana.souza';
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('sb-user').textContent = currentUser;
+  document.getElementById('sb-role').textContent = role.charAt(0).toUpperCase()+role.slice(1);
+  document.getElementById('dash-scope').textContent = role==='colaborador' ? 'seus registros' : (role==='gestor' ? 'setor Atendimento' : 'todos os setores');
+  renderAll();
+  showView('dashboard');
+}
+function doLogout(){
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+}
+
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.navlink').forEach(n=>n.classList.remove('active'));
+  document.querySelector(`.navlink[data-view="${name}"]`).classList.add('active');
+
+  const usuariosLock = document.getElementById('usuarios-locked');
+  const usuariosPanel = document.getElementById('usuarios-panel');
+  if(name==='usuarios'){
+    if(currentRole !== 'administrador'){
+      usuariosLock.style.display='block';
+      usuariosPanel.style.display='none';
+    } else {
+      usuariosLock.style.display='none';
+      usuariosPanel.style.display='block';
+    }
+  }
+  if(name==='relatorios'){ document.getElementById('report-summary').innerHTML=''; document.getElementById('report-table-body').innerHTML=''; }
+}
+
+function scopedData(){
+  if(currentRole==='colaborador') return atividades.filter(a=>a.colaborador==='Ana Souza');
+  if(currentRole==='gestor') return atividades.filter(a=>a.setor==='Atendimento');
+  return atividades;
+}
+
+function renderAll(){
+  renderDashboard();
+  renderConsulta();
+  renderUsuarios();
+}
+
+function renderDashboard(){
+  const data = scopedData();
+  const total = data.length;
+  const pendentes = data.filter(a=>a.status==='Pendente').length;
+  const aprovados = data.filter(a=>a.status==='Aprovado').length;
+  const setoresAtivos = new Set(data.map(a=>a.setor)).size;
+
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card"><div class="num">${total}</div><div class="label">Atividades registradas</div></div>
+    <div class="stat-card"><div class="num">${pendentes}</div><div class="label">Pendentes de aprovação</div></div>
+    <div class="stat-card"><div class="num">${aprovados}</div><div class="label">Aprovadas</div></div>
+    <div class="stat-card"><div class="num">${setoresAtivos}</div><div class="label">Setores envolvidos</div></div>
+  `;
+
+  const rows = data.slice(0,8).map(a=>`
+    <tr>
+      <td><span class="protocolo">${a.protocolo}</span></td>
+      <td>${a.colaborador}</td>
+      <td>${a.tipo}</td>
+      <td>${a.setor}</td>
+      <td class="mono">${a.data}</td>
+      <td><span class="status-pill ${statusPillClass(a.status)}">${a.status}</span></td>
+    </tr>
+  `).join('');
+  document.getElementById('dash-table-body').innerHTML = rows || `<tr><td colspan="6" class="empty">Nenhum registro ainda.</td></tr>`;
+}
+
+function renderConsulta(){
+  const setor = document.getElementById('filt-setor').value;
+  const tipo = document.getElementById('filt-tipo').value;
+  const status = document.getElementById('filt-status').value;
+  const busca = document.getElementById('filt-busca').value.toLowerCase();
+
+  let data = scopedData();
+  if(setor) data = data.filter(a=>a.setor===setor);
+  if(tipo) data = data.filter(a=>a.tipo===tipo);
+  if(status) data = data.filter(a=>a.status===status);
+  if(busca) data = data.filter(a=>a.colaborador.toLowerCase().includes(busca));
+
+  const rows = data.map(a=>`
+    <tr>
+      <td><span class="protocolo">${a.protocolo}</span></td>
+      <td>${a.colaborador}</td>
+      <td>${a.tipo}</td>
+      <td>${a.setor}</td>
+      <td class="mono">${a.data}</td>
+      <td><span class="status-pill ${statusPillClass(a.status)}">${a.status}</span></td>
+      <td>${currentRole!=='colaborador' && a.status==='Pendente' ? `<button class="btn-secondary btn-sm" onclick="aprovar('${a.protocolo}')">Aprovar</button>` : ''}</td>
+    </tr>
+  `).join('');
+  document.getElementById('consulta-table-body').innerHTML = rows || `<tr><td colspan="7" class="empty">Nenhum registro encontrado para este filtro.</td></tr>`;
+}
+
+function aprovar(protocolo){
+  const a = atividades.find(x=>x.protocolo===protocolo);
+  if(a){ a.status='Aprovado'; renderConsulta(); renderDashboard(); showToast('Atividade '+protocolo+' aprovada.'); }
+}
+
+function registrarAtividade(){
+  const colab = document.getElementById('f-colab').value.trim();
+  const data = document.getElementById('f-data').value;
+  if(!colab || !data){ showToast('Preencha ao menos colaborador e data.'); return; }
+  const novo = {
+    protocolo: nextProtocolo(),
+    colaborador: colab,
+    setor: document.getElementById('f-setor').value,
+    tipo: document.getElementById('f-tipo').value,
+    status: 'Pendente',
+    data: data,
+    hora: document.getElementById('f-hora').value || '—',
+    resp: document.getElementById('f-resp').value || '—',
+    desc: document.getElementById('f-desc').value || ''
+  };
+  atividades.unshift(novo);
+  renderDashboard(); renderConsulta();
+  showToast('Atividade registrada · protocolo '+novo.protocolo);
+  limparForm();
+  showView('dashboard');
+}
+function limparForm(){
+  document.getElementById('f-resp').value='';
+  document.getElementById('f-hora').value='';
+  document.getElementById('f-data').value='';
+  document.getElementById('f-desc').value='';
+}
+
+function gerarRelatorio(){
+  const de = document.getElementById('rel-de').value || '2026-01-01';
+  const ate = document.getElementById('rel-ate').value || '2026-12-31';
+  const data = scopedData().filter(a=>a.data>=de && a.data<=ate);
+
+  const total = data.length;
+  const aprov = data.filter(a=>a.status==='Aprovado').length;
+  const pend = data.filter(a=>a.status==='Pendente').length;
+
+  document.getElementById('report-summary').innerHTML = `
+    <div><div class="n">${total}</div><div class="l">Total no período</div></div>
+    <div><div class="n">${aprov}</div><div class="l">Aprovadas</div></div>
+    <div><div class="n">${pend}</div><div class="l">Pendentes</div></div>
+  `;
+
+  const bySetor = {};
+  SETORES.forEach(s=> bySetor[s] = {sub:0,cob:0,apo:0});
+  data.forEach(a=>{
+    if(!bySetor[a.setor]) bySetor[a.setor] = {sub:0,cob:0,apo:0};
+    if(a.tipo.startsWith('Subst')) bySetor[a.setor].sub++;
+    else if(a.tipo.startsWith('Cobertura')) bySetor[a.setor].cob++;
+    else bySetor[a.setor].apo++;
+  });
+  const rows = Object.entries(bySetor).map(([s,c])=>`
+    <tr><td>${s}</td><td>${c.sub}</td><td>${c.cob}</td><td>${c.apo}</td><td><strong>${c.sub+c.cob+c.apo}</strong></td></tr>
+  `).join('');
+  document.getElementById('report-table-body').innerHTML = rows;
+  showToast('Relatorio gerado para o periodo selecionado.');
+}
+
+function exportarCSV(){
+  const data = scopedData();
+  const header = "Protocolo,Colaborador,Setor,Tipo,Data,Status\n";
+  const body = data.map(a=>[a.protocolo,a.colaborador,a.setor,a.tipo,a.data,a.status].join(",")).join("\n");
+  const blob = new Blob([header+body], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url; link.download = 'sigraf_relatorio.csv';
+  document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  showToast('CSV exportado com sucesso.');
+}
+
+function renderUsuarios(){
+  const usuarios = [
+    {nome:"Ana Souza", user:"ana.souza", setor:"Atendimento", perfil:"Colaborador", status:"Ativo"},
+    {nome:"Marcos Teixeira", user:"marcos.t", setor:"Atendimento", perfil:"Gestor", status:"Ativo"},
+    {nome:"Diego Alves", user:"diego.alves", setor:"Financeiro", perfil:"Colaborador", status:"Ativo"},
+    {nome:"Fernanda Costa", user:"fernanda.c", setor:"Operações", perfil:"Gestor", status:"Ativo"},
+    {nome:"Larissa Melo", user:"larissa.m", setor:"TI/Administração", perfil:"Administrador", status:"Ativo"},
+    {nome:"Rafael Nunes", user:"rafael.n", setor:"Manutenção", perfil:"Colaborador", status:"Inativo"},
+  ];
+  document.getElementById('usuarios-table-body').innerHTML = usuarios.map(u=>`
+    <tr>
+      <td>${u.nome}</td><td class="mono">${u.user}</td><td>${u.setor}</td><td>${u.perfil}</td>
+      <td><span class="status-pill ${u.status==='Ativo'?'status-aprovado':'status-recusado'}">${u.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=> t.classList.remove('show'), 3200);
+}
+</script>
+</body>
+</html>
